@@ -1,109 +1,42 @@
 <!DOCTYPE html>
 <html>
-
 <head>
-    <title>Login - Developer Attendance</title>
-    <!-- Firebase SDK code -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-
-    <script>
-        // Paste your firebaseConfig here:
-        const firebaseConfig = {
-            apiKey: "AIzaSyCiRhfZEh2XdiyQh52h0R_4TMuxZnCEKD4",
-            authDomain: "developerattendance-4cefd.firebaseapp.com",
-            projectId: "developerattendance-4cefd",
-            storageBucket: "developerattendance-4cefd.firebasestorage.app",
-            messagingSenderId: "622214736730",
-            appId: "1:622214736730:web:f2f24b4070b1bf8e7f6163"
-        };
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        const db = firebase.firestore();
-    </script>
-
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            padding: 40px;
-            max-width: 400px;
-            margin: auto;
-        }
-
-        label,
-        input {
-            display: block;
-            width: 100%;
-            margin-top: 15px;
-        }
-
-        input {
-            padding: 10px;
-            font-size: 16px;
-        }
-
-        button[type="submit"] {
-            margin-top: 20px;
-            padding: 10px;
-            width: 100%;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            font-size: 16px;
-            cursor: pointer;
-        }
-
-        button[type="submit"]:hover {
-            background-color: #45a049;
-        }
-
-        #message {
-            margin-top: 15px;
-            color: red;
-            font-weight: bold;
-        }
-    </style>
+  <title>Welcome - Developer Attendance</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 400px;
+      margin: 100px auto;
+      text-align: center;
+      background: #f4f4f9;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.1);
+    }
+    h1 {
+      margin-bottom: 40px;
+      color: #333;
+    }
+    button {
+      width: 150px;
+      padding: 15px;
+      margin: 15px;
+      font-size: 18px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      background-color: #4CAF50;
+      color: white;
+      transition: background-color 0.3s ease;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+  </style>
 </head>
-
 <body>
-    <h2>Login</h2>
-    <form id="login-form">
-        <label>Email</label>
-        <input type="email" id="email" required>
-
-        <label>Password</label>
-        <input type="password" id="password" required>
-
-        <button type="submit">Login</button>
-
-    </form>
-    <div id="message"></div>
-
-    <script>
-        const loginForm = document.getElementById('login-form');
-        const messageDiv = document.getElementById('message');
-
-        loginForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const email = document.getElementById('email').value.trim();
-            const password = document.getElementById('password').value;
-
-            try {
-                const userCredential = await auth.signInWithEmailAndPassword(email, password);
-                messageDiv.style.color = 'green';
-                messageDiv.innerText = 'Login successful! Redirecting...';
-
-                // Redirect to attendance page after login
-                setTimeout(() => {
-                    window.location.href = 'attendance.html';
-                }, 1500);
-            } catch (error) {
-                messageDiv.style.color = 'red';
-                messageDiv.innerText = error.message;
-            }
-        });
-    </script>
+  <h1>Developer Attendance</h1>
+  <button onclick="window.location.href='login.html'">Login</button>
+  <button onclick="window.location.href='register.html'">Create New Account</button>
 </body>
-
 </html>
