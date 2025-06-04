@@ -74,7 +74,6 @@
 
         #message {
             margin-top: 15px;
-            color: red;
             font-weight: bold;
         }
     </style>
@@ -110,16 +109,18 @@
             const password = document.getElementById('password').value;
 
             try {
-                // Create user in Firebase Auth
                 const userCredential = await auth.createUserWithEmailAndPassword(email, password);
                 const user = userCredential.user;
 
-                // Save extra user info (name) to Firestore
                 await db.collection('users').doc(user.uid).set({ name, email });
 
                 messageDiv.style.color = 'green';
-                messageDiv.innerText = 'Registration successful! You can now login.';
-                registerForm.reset();
+                messageDiv.innerText = 'Registration successful! Redirecting to login...';
+
+                setTimeout(() => {
+                    window.location.href = 'login.html';
+                }, 2000);
+
             } catch (error) {
                 messageDiv.style.color = 'red';
                 messageDiv.innerText = error.message;
