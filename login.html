@@ -73,7 +73,10 @@
         <input type="email" id="email" required>
 
         <label>Password</label>
-        <input type="password" id="password" required>
+        <div style="position: relative; width: 100%;">
+            <input type="password" id="password" required style="padding-right: 40px; width: 100%;">
+            <button type="button" id="togglePassword">Show</button>
+        </div>
 
         <button type="submit">Login</button>
 
@@ -102,6 +105,15 @@
                 messageDiv.style.color = 'red';
                 messageDiv.innerText = error.message;
             }
+        });
+
+        const togglePassword = document.getElementById('togglePassword');
+        const passwordInput = document.getElementById('password');
+
+        togglePassword.addEventListener('click', () => {
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+            togglePassword.innerText = type === 'password' ? 'Show' : 'Hide';
         });
     </script>
 </body>
