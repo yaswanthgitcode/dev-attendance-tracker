@@ -6,11 +6,13 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
             padding: 30px;
-            max-width: 900px;
+            max-width: 1000px;
             margin: auto;
         }
 
@@ -48,6 +50,16 @@
         .logout-btn:hover {
             background-color: #d32f2f;
         }
+
+        #search-box {
+            margin-top: 20px;
+            padding: 8px;
+            width: 100%;
+        }
+
+        #calendar {
+            margin-top: 40px;
+        }
     </style>
 </head>
 
@@ -57,6 +69,8 @@
         Admin Attendance Dashboard
         <button class="logout-btn" onclick="logout()">Logout</button>
     </h2>
+
+    <input type="text" id="search-box" placeholder="Search by name, email, or date...">
 
     <table>
         <thead>
@@ -73,6 +87,8 @@
             <!-- Rows will be added here -->
         </tbody>
     </table>
+
+    <div id="calendar"></div>
 
     <script>
         const firebaseConfig = {
@@ -94,26 +110,76 @@
                 return;
             }
 
+            // Role-based check (admin only access)
+            const userDoc = await db.collection("users").doc(user.uid).get();
+            if (!userDoc.exists || userDoc.data().role !== "admin") {
+                alert("Access denied. You are not an admin.");
+                auth.signOut();
+                return;
+            }
+
             const tableBody = document.getElementById("attendance-table-body");
+            const searchBox = document.getElementById("search-box");
+            const calendarEl = document.getElementById("calendar");
+            const calendarEvents = [];
 
             const snapshot = await db.collection("attendance").orderBy("date", "desc").get();
+            const allRows = [];
 
             for (const doc of snapshot.docs) {
                 const data = doc.data();
+                const userData = await db.collection("users").doc(data.uid).get();
+                const name = userData.exists ? userData.data().name : "Unknown";
 
-                const userDoc = await db.collection("users").doc(data.uid).get();
-                const name = userDoc.exists ? userDoc.data().name : "Unknown";
+                const rowData = {
+                    name,
+                    email: data.email,
+                    date: data.date,
+                    time: data.time,
+                    attendance: data.attendance,
+                    task: data.task
+                };
+                allRows.push(rowData);
 
-                const row = `<tr>
-                      <td>${name}</td>
-                      <td>${data.email}</td>
-                      <td>${data.date}</td>
-                      <td>${data.time}</td>
-                      <td>${data.attendance}</td>
-                      <td>${data.task}</td>
-                    </tr>`;
-                tableBody.innerHTML += row;
+                calendarEvents.push({
+                    title: `${name} - ${data.attendance}`,
+                    start: data.date
+                });
             }
+
+            function renderTable(rows) {
+                tableBody.innerHTML = "";
+                rows.forEach(row => {
+                    const tr = `<tr>
+                        <td>${row.name}</td>
+                        <td>${row.email}</td>
+                        <td>${row.date}</td>
+                        <td>${row.time}</td>
+                        <td>${row.attendance}</td>
+                        <td>${row.task}</td>
+                      </tr>`;
+                    tableBody.innerHTML += tr;
+                });
+            }
+
+            renderTable(allRows);
+
+            searchBox.addEventListener("input", () => {
+                const keyword = searchBox.value.toLowerCase();
+                const filtered = allRows.filter(row =>
+                    row.name.toLowerCase().includes(keyword) ||
+                    row.email.toLowerCase().includes(keyword) ||
+                    row.date.includes(keyword)
+                );
+                renderTable(filtered);
+            });
+
+            const calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                events: calendarEvents
+            });
+
+            calendar.render();
         });
 
         function logout() {
