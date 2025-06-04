@@ -1,78 +1,141 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-  <title>Register - Developer Attendance</title>
-  <!-- Firebase SDK code (paste what you got in Step 2 here) -->
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <title>Register - Developer Attendance</title>
+    <!-- Firebase SDK code -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
 
-  <script>
-    // Paste your firebaseConfig from Step 2 here:
-    const firebaseConfig = {
-      apiKey: "YOUR-API-KEY",
-      authDomain: "YOUR-PROJECT.firebaseapp.com",
-      projectId: "YOUR-PROJECT",
-      storageBucket: "YOUR-PROJECT.appspot.com",
-      messagingSenderId: "SENDER-ID",
-      appId: "APP-ID"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const db = firebase.firestore();
-  </script>
+    <script>
+        // Paste your firebaseConfig here:
+        const firebaseConfig = {
+            apiKey: "AIzaSyCiRhfZEh2XdiyQh52h0R_4TMuxZnCEKD4",
+            authDomain: "developerattendance-4cefd.firebaseapp.com",
+            projectId: "developerattendance-4cefd",
+            storageBucket: "developerattendance-4cefd.firebasestorage.app",
+            messagingSenderId: "622214736730",
+            appId: "1:622214736730:web:f2f24b4070b1bf8e7f6163"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+    </script>
 
-  <style>
-    body { font-family: Arial, sans-serif; padding: 40px; max-width: 400px; margin: auto; }
-    label, input { display: block; width: 100%; margin-top: 15px; }
-    input { padding: 10px; font-size: 16px; }
-    button { margin-top: 20px; padding: 10px; width: 100%; background-color: #4CAF50; color: white; border: none; font-size: 16px; cursor: pointer; }
-    button:hover { background-color: #45a049; }
-    #message { margin-top: 15px; color: red; font-weight: bold; }
-  </style>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 40px;
+            max-width: 400px;
+            margin: auto;
+        }
+
+        label,
+        input {
+            display: block;
+            width: 100%;
+            margin-top: 15px;
+        }
+
+        input {
+            padding: 10px;
+            font-size: 16px;
+        }
+
+        button[type="submit"] {
+            margin-top: 20px;
+            padding: 10px;
+            width: 100%;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        button[type="submit"]:hover {
+            background-color: #45a049;
+        }
+
+        /* Style for toggle button inside password field */
+        #togglePassword {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            padding: 0;
+            color: #007BFF;
+        }
+
+        #message {
+            margin-top: 15px;
+            color: red;
+            font-weight: bold;
+        }
+    </style>
 </head>
+
 <body>
-  <h2>Register</h2>
-  <form id="register-form">
-    <label>Name</label>
-    <input type="text" id="name" required>
-    
-    <label>Email</label>
-    <input type="email" id="email" required>
-    
-    <label>Password</label>
-    <input type="password" id="password" required>
-    
-    <button type="submit">Register</button>
-  </form>
-  <div id="message"></div>
+    <h2>Register</h2>
+    <form id="register-form">
+        <label>Name</label>
+        <input type="text" id="name" required>
 
-  <script>
-    const registerForm = document.getElementById('register-form');
-    const messageDiv = document.getElementById('message');
+        <label>Email</label>
+        <input type="email" id="email" required>
 
-    registerForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const name = document.getElementById('name').value.trim();
-      const email = document.getElementById('email').value.trim();
-      const password = document.getElementById('password').value;
+        <label>Password</label>
+        <div style="position: relative; width: 100%;">
+            <input type="password" id="password" required style="padding-right: 40px; width: 100%;">
+            <button type="button" id="togglePassword">Show</button>
+        </div>
 
-      try {
-        // Create user in Firebase Auth
-        const userCredential = await auth.createUserWithEmailAndPassword(email, password);
-        const user = userCredential.user;
+        <button type="submit">Register</button>
+    </form>
+    <div id="message"></div>
 
-        // Save extra user info (name) to Firestore
-        await db.collection('users').doc(user.uid).set({ name, email });
+    <script>
+        const registerForm = document.getElementById('register-form');
+        const messageDiv = document.getElementById('message');
 
-        messageDiv.style.color = 'green';
-        messageDiv.innerText = 'Registration successful! You can now login.';
-        registerForm.reset();
-      } catch (error) {
-        messageDiv.style.color = 'red';
-        messageDiv.innerText = error.message;
-      }
-    });
-  </script>
+        registerForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('name').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+
+            try {
+                // Create user in Firebase Auth
+                const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+                const user = userCredential.user;
+
+                // Save extra user info (name) to Firestore
+                await db.collection('users').doc(user.uid).set({ name, email });
+
+                messageDiv.style.color = 'green';
+                messageDiv.innerText = 'Registration successful! You can now login.';
+                registerForm.reset();
+            } catch (error) {
+                messageDiv.style.color = 'red';
+                messageDiv.innerText = error.message;
+            }
+        });
+
+        // Show/Hide password toggle
+        const togglePassword = document.getElementById('togglePassword');
+        const passwordInput = document.getElementById('password');
+
+        togglePassword.addEventListener('click', () => {
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+            togglePassword.innerText = type === 'password' ? 'Show' : 'Hide';
+        });
+    </script>
 </body>
+
 </html>
