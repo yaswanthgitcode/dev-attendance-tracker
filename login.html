@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html>
-
 <head>
     <title>Login - Developer Attendance</title>
     <!-- Firebase SDK code -->
@@ -9,7 +8,6 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
 
     <script>
-        // Paste your firebaseConfig here:
         const firebaseConfig = {
             apiKey: "AIzaSyCiRhfZEh2XdiyQh52h0R_4TMuxZnCEKD4",
             authDomain: "developerattendance-4cefd.firebaseapp.com",
@@ -31,8 +29,7 @@
             margin: auto;
         }
 
-        label,
-        input {
+        label, input {
             display: block;
             width: 100%;
             margin-top: 15px;
@@ -67,8 +64,6 @@
             color: #007BFF;
         }
 
-       
-
         button[type="submit"]:hover {
             background-color: #45a049;
         }
@@ -94,7 +89,6 @@
         </div>
 
         <button type="submit">Login</button>
-
     </form>
     <div id="message"></div>
 
@@ -109,19 +103,30 @@
 
             try {
                 const userCredential = await auth.signInWithEmailAndPassword(email, password);
-                messageDiv.style.color = 'green';
-                messageDiv.innerText = 'Login successful! Redirecting...';
+                const user = userCredential.user;
 
-                // Redirect to attendance page after login
+                messageDiv.style.color = 'green';
+                messageDiv.innerText = 'Login successful! Checking role...';
+
+                // Get user role from Firestore
+                const userDoc = await db.collection("users").doc(user.uid).get();
+                const userData = userDoc.data();
+                const role = userData && userData.role ? userData.role : "developer";
+
                 setTimeout(() => {
-                    window.location.href = 'attendance.html';
-                }, 1500);
+                    if (role === "admin") {
+                        window.location.href = "admin.html";
+                    } else {
+                        window.location.href = "attendance.html";
+                    }
+                }, 1000);
             } catch (error) {
                 messageDiv.style.color = 'red';
                 messageDiv.innerText = error.message;
             }
         });
 
+        // Show/Hide password toggle
         const togglePassword = document.getElementById('togglePassword');
         const passwordInput = document.getElementById('password');
 
@@ -132,5 +137,4 @@
         });
     </script>
 </body>
-
 </html>
