@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Developer Attendance</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f9;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 50px 20px;
+    }
+
+    h2 {
+      color: #333;
+      margin-bottom: 30px;
+    }
+
+    form {
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+      max-width: 400px;
+      width: 100%;
+    }
+
+    label {
+      display: block;
+      margin-top: 15px;
+      font-weight: bold;
+    }
+
+    input[type="text"], select, textarea {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+
+    button {
+      margin-top: 20px;
+      padding: 10px 20px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    button:hover {
+      background-color: #45a049;
+    }
+
+    #response {
+      margin-top: 20px;
+      font-weight: bold;
+      color: #333;
+    }
+
+    #datetime {
+      margin-bottom: 20px;
+      font-size: 16px;
+      color: #555;
+    }
+  </style>
+</head>
+<body>
+  <h2>Developer Daily Attendance</h2>
+
+  <div id="datetime"></div>
+
+  <form id="attendance-form">
+    <label>Name:</label>
+    <input type="text" id="name" required>
+
+    <label>Attendance:</label>
+    <select id="attendance" required>
+      <option value="Present">Present</option>
+      <option value="Absent">Absent</option>
+    </select>
+
+    <label>What did you work on today?</label>
+    <textarea id="task" rows="4" cols="40" required></textarea>
+
+    <button type="submit">Submit</button>
+  </form>
+
+  <p id="response"></p>
+
+  <script>
+    const form = document.getElementById('attendance-form');
+    const datetimeDiv = document.getElementById('datetime');
+
+    // Display current day and time
+    const now = new Date();
+    const day = now.toLocaleDateString('en-US', { weekday: 'long' });
+    const date = now.toLocaleDateString();
+    const time = now.toLocaleTimeString();
+    datetimeDiv.textContent = `Today is ${day}, ${date} - ${time}`;
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const name = document.getElementById('name').value;
+      const attendance = document.getElementById('attendance').value;
+      const task = document.getElementById('task').value;
+      const date = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+
+      const response = await fetch('https://attendance-backend-h0pv.onrender.com', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, attendance, task, date })
+      });
+
+      const data = await response.json();
+      document.getElementById('response').innerText = data.message || data.error;
+    });
+  </script>
+</body>
+</html>
