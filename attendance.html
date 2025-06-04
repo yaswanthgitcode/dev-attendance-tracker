@@ -52,6 +52,8 @@
 <body>
 
     <h2>Mark Your Daily Attendance</h2>
+    <p><strong>Date:</strong> <span id="current-date"></span></p>
+    <p><strong>Time:</strong> <span id="current-time"></span></p>
 
     <form id="attendance-form">
         <label>Attendance</label>
@@ -82,6 +84,11 @@
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const db = firebase.firestore();
+
+        // Show current date and time on the page
+        const now = new Date();
+        document.getElementById("current-date").innerText = now.toISOString().split("T")[0];
+        document.getElementById("current-time").innerText = now.toLocaleTimeString();
 
         // Check if user is logged in
         auth.onAuthStateChanged(user => {
