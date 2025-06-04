@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Developer Attendance</title>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 30px;
+            max-width: 600px;
+            margin: auto;
+        }
+
+        label {
+            display: block;
+            margin-top: 15px;
+        }
+
+        textarea,
+        input,
+        select {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+        }
+
+        button {
+            margin-top: 20px;
+            padding: 10px;
+            width: 100%;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        #message {
+            margin-top: 15px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h2>Mark Your Daily Attendance</h2>
+
+    <form id="attendance-form">
+        <label>Attendance</label>
+        <select id="attendance">
+            <option value="Present">Present</option>
+            <option value="Absent">Absent</option>
+        </select>
+
+        <label>What did you work on today?</label>
+        <textarea id="task" rows="4" required></textarea>
+
+        <button type="submit">Submit Attendance</button>
+    </form>
+
+    <div id="message"></div>
+
+    <script>
+        // Firebase Config
+        const firebaseConfig = {
+            apiKey: "AIzaSyCiRhfZEh2XdiyQh52h0R_4TMuxZnCEKD4",
+            authDomain: "developerattendance-4cefd.firebaseapp.com",
+            projectId: "developerattendance-4cefd",
+            storageBucket: "developerattendance-4cefd.firebasestorage.app",
+            messagingSenderId: "622214736730",
+            appId: "1:622214736730:web:f2f24b4070b1bf8e7f6163"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        // Check if user is logged in
+        auth.onAuthStateChanged(user => {
+            if (!user) {
+                window.location.href = "login.html"; // redirect if not logged in
+            }
+        });
+
+        const form = document.getElementById('attendance-form');
+        const messageDiv = document.getElementById('message');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const attendance = document.getElementById('attendance').value;
+            const task = document.getElementById('task').value;
+            const user = auth.currentUser;
+
+            if (!user) return alert("You are not logged in");
+
+            const timestamp = new Date();
+            const date = timestamp.toISOString().split("T")[0];
+            const time = timestamp.toLocaleTimeString();
+
+            try {
+                await db.collection("attendance").add({
+                    uid: user.uid,
+                    email: user.email,
+                    attendance,
+                    task,
+                    date,
+                    time,
+                });
+
+                messageDiv.style.color = "green";
+                messageDiv.innerText = "Attendance submitted successfully!";
+                form.reset();
+            } catch (err) {
+                messageDiv.style.color = "red";
+                messageDiv.innerText = "Error: " + err.message;
+            }
+        });
+    </script>
+
+</body>
+
+</html>
