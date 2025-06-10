@@ -264,30 +264,36 @@
                 const db = firebase.firestore();
                 const today = new Date().toISOString().split("T")[0];
 
-                document.getElementById("user-email").innerText = user.email;
+              
 
-                // Check if the user marked attendance today
-                const attendanceSnapshot = await db.collection("attendance")
-                    .where("uid", "==", user.uid)
-                    .where("date", "==", today)
-                    .get();
+                // Get the last 7 days (or more if needed)
+                for (let i = 1; i <= 7; i++) { // Check the past 7 days
+                    let pastDate = new Date();
+                    pastDate.setDate(pastDate.getDate() - i);
+                    let formattedDate = pastDate.toISOString().split("T")[0];
 
-                if (attendanceSnapshot.empty) {
-                    // Automatically mark as Absent if no attendance is found
-                    await db.collection("attendance").add({
-                        uid: user.uid,
-                        email: user.email,
-                        attendance: "Absent",
-                        task: "Attendance not recorded. Please ensure to submit daily.",
-                        date: today,
-                        time: new Date().toLocaleTimeString()
-                    });
+                    // Check if user submitted attendance for that day
+                    const attendanceSnapshot = await db.collection("attendance")
+                        .where("uid", "==", user.uid)
+                        .where("date", "==", formattedDate)
+                        .get();
 
-                    console.log("You were marked as Absent because no attendance was found.");
+                    if (attendanceSnapshot.empty) {
+                        // Mark as Absent for that day
+                        await db.collection("attendance").add({
+                            uid: user.uid,
+                            email: user.email,
+                            attendance: "Absent",
+                            task: "No attendance recorded for this day.",
+                            date: formattedDate,
+                            time: "Auto-marked"
+                        });
+
+                        console.log(`Marked user absent for ${formattedDate}`);
+                    }
                 }
 
-                loadAttendanceRecords();
-                calculateAttendance();
+        
             }
         });
 
