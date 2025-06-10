@@ -254,8 +254,8 @@
 
             const calendarEl = document.getElementById('calendar');
 
-            // Destroy previous calendar if exists
-            if (window.calendar) {
+            // Safely destroy previous calendar if exists and has destroy method
+            if (window.calendar && typeof window.calendar.destroy === "function") {
                 window.calendar.destroy();
             }
 
