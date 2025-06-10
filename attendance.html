@@ -357,7 +357,7 @@
 
         // Firebase Configuration (Using global __firebase_config as per instructions)
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+        
 
         // Initialize Firebase app if config is available
         if (Object.keys(firebaseConfig).length > 0) {
