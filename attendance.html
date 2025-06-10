@@ -43,8 +43,7 @@
             margin-top: 15px;
         }
 
-        textarea,
-        select {
+        textarea, select {
             width: 100%;
             padding: 10px;
             margin-top: 5px;
@@ -84,6 +83,16 @@
 
         #attendance-table th {
             background-color: #f2f2f2;
+        }
+
+        /* Attendance Calculator */
+        .attendance-summary {
+            margin-top: 30px;
+            padding: 20px;
+            border: 2px solid #ccc;
+            background-color: #f9f9f9;
+            text-align: center;
+            font-size: 18px;
         }
     </style>
 </head>
@@ -125,8 +134,13 @@
         <tbody></tbody>
     </table>
 
+    <div class="attendance-summary">
+        <p><strong>Total Present Days:</strong> <span id="total-present">0</span></p>
+        <p><strong>Total Absent Days:</strong> <span id="total-absent">0</span></p>
+    </div>
+
     <script>
-          // Firebase Config
+         // Firebase Config
         const firebaseConfig = {
             apiKey: "AIzaSyASGzw8lSvOsmmf9OlPVSnhTjFg1NBOUbU",
             authDomain: "ad-addendence.firebaseapp.com",
@@ -135,6 +149,7 @@
             messagingSenderId: "914725906557",
             appId: "1:914725906557:web:c9ce2c108efb7abe9da914"
         };
+
 
 
         firebase.initializeApp(firebaseConfig);
@@ -190,6 +205,7 @@
                 messageDiv.innerText = "Attendance submitted successfully!";
                 form.reset();
                 await loadAttendanceRecords();
+                await calculateAttendance();
 
             } catch (err) {
                 messageDiv.style.color = "red";
@@ -227,11 +243,31 @@
             });
         }
 
+        async function calculateAttendance() {
+            const user = auth.currentUser;
+            if (!user) return;
+
+            const snapshot = await db.collection("attendance")
+                .where("uid", "==", user.uid)
+                .get();
+
+            let presentCount = 0, absentCount = 0;
+
+            snapshot.forEach(doc => {
+                if (doc.data().attendance === "Present") presentCount++;
+                else absentCount++;
+            });
+
+            document.getElementById("total-present").innerText = presentCount;
+            document.getElementById("total-absent").innerText = absentCount;
+        }
+
         auth.onAuthStateChanged(user => {
             if (!user) {
                 window.location.href = "login.html";
             } else {
                 loadAttendanceRecords();
+                calculateAttendance();
             }
         });
     </script>
