@@ -47,7 +47,8 @@
             margin-top: 15px;
         }
 
-        textarea, select {
+        textarea,
+        select {
             width: 100%;
             padding: 10px;
             margin-top: 5px;
@@ -79,7 +80,8 @@
             margin-top: 20px;
         }
 
-        #attendance-table th, #attendance-table td {
+        #attendance-table th,
+        #attendance-table td {
             border: 1px solid #ddd;
             padding: 8px;
             text-align: left;
@@ -105,7 +107,8 @@
             max-width: 800px;
             margin-left: auto;
             margin-right: auto;
-            height: 600px; /* Ensures the calendar displays properly */
+            height: 600px;
+            /* Ensures the calendar displays properly */
         }
     </style>
 </head>
@@ -157,7 +160,7 @@
 
     <script>
         // Firebase Config
-          // Firebase Config
+        // Firebase Config
         const firebaseConfig = {
             apiKey: "AIzaSyASGzw8lSvOsmmf9OlPVSnhTjFg1NBOUbU",
             authDomain: "ad-addendence.firebaseapp.com",
@@ -201,10 +204,13 @@
             });
 
             const calendarEl = document.getElementById('calendar');
-            if (window.calendar) {
+
+            // Ensure the previous calendar instance is properly removed
+            if (window.calendar && typeof window.calendar.destroy === "function") {
                 window.calendar.destroy();
             }
 
+            // Create a new calendar instance
             window.calendar = new FullCalendar.Calendar(calendarEl, {
                 initialView: 'dayGridMonth',
                 events: events
@@ -212,6 +218,7 @@
 
             window.calendar.render();
         }
+
 
         async function calculateAttendance() {
             const user = auth.currentUser;
@@ -243,4 +250,5 @@
     </script>
 
 </body>
+
 </html>
