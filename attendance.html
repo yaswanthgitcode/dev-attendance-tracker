@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Developer Attendance</title>
 
     <!-- Firebase -->
@@ -9,35 +9,24 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
 
-    <!-- FullCalendar CSS -->
+    <!-- FullCalendar -->
     <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.css" rel="stylesheet" />
-    <!-- FullCalendar JS -->
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.js"></script>
 
     <link rel="shortcut icon" href="logo.png" type="image/x-icon">
 
     <style>
         body {
-            font-family: 'Inter', Arial, sans-serif;
-            padding: 20px;
+            font-family: Arial, sans-serif;
+            padding: 30px;
             max-width: 800px;
             margin: auto;
-            background-color: #f0f2f5;
-            color: #333;
         }
 
         .top-bar {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
-            padding: 10px 0;
-            border-bottom: 1px solid #ddd;
-        }
-
-        h2 {
-            color: #2c3e50;
-            margin: 0;
         }
 
         .logout-btn {
@@ -47,8 +36,6 @@
             padding: 8px 16px;
             cursor: pointer;
             font-size: 14px;
-            border-radius: 5px;
-            transition: background-color 0.3s ease;
         }
 
         .logout-btn:hover {
@@ -58,120 +45,49 @@
         label {
             display: block;
             margin-top: 15px;
-            font-weight: bold;
-            color: #555;
         }
 
         textarea,
         input,
         select {
-            width: calc(100% - 20px);
+            width: 100%;
             padding: 10px;
             margin-top: 5px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            box-sizing: border-box;
-            font-size: 16px;
         }
 
         button[type="submit"] {
             margin-top: 20px;
-            padding: 12px;
+            padding: 10px;
             width: 100%;
             background-color: #4CAF50;
             color: white;
             border: none;
-            font-size: 18px;
+            font-size: 16px;
             cursor: pointer;
-            border-radius: 5px;
-            transition: background-color 0.3s ease;
         }
 
         button[type="submit"]:hover {
             background-color: #45a049;
         }
 
-        #message, #daily-attendance-status {
+        #message {
             margin-top: 15px;
             font-weight: bold;
-            padding: 10px;
-            border-radius: 5px;
-            text-align: center;
-        }
-        
-        #message.success {
-            background-color: #d4edda;
-            color: #155724;
         }
 
-        #message.error {
-            background-color: #f8d7da;
-            color: #721c24;
+        #stats {
+            margin-top: 40px;
+            border-top: 1px solid #ddd;
+            padding-top: 20px;
         }
 
-        #daily-attendance-status {
-            background-color: #fff3cd;
-            color: #856404;
-            margin-bottom: 20px;
-        }
-
-        #user-info {
-            margin-top: 20px;
-            padding: 10px;
-            background-color: #e9ecef;
-            border-radius: 5px;
-            color: #495057;
-            font-size: 0.9em;
-        }
-        #user-info strong {
-            color: #343a40;
-        }
-
+        /* Fix: Give calendar container a height */
         #calendar {
             margin-top: 20px;
             max-width: 800px;
             margin-left: auto;
             margin-right: auto;
-            background-color: #ffffff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-
-        .fc .fc-toolbar-title {
-            font-size: 1.5em;
-            color: #2c3e50;
-        }
-        .fc .fc-button-primary {
-            background-color: #007bff;
-            border-color: #007bff;
-            border-radius: 5px;
-            padding: 5px 10px;
-        }
-        .fc .fc-button-primary:hover {
-            background-color: #0056b3;
-            border-color: #0056b3;
-        }
-        .fc-event {
-            font-size: 0.8em;
-            padding: 2px 5px;
-            border-radius: 3px;
-        }
-
-        @media (max-width: 600px) {
-            body {
-                padding: 15px;
-            }
-            .top-bar {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-            .logout-btn {
-                margin-top: 10px;
-            }
-            .fc .fc-toolbar-title {
-                font-size: 1.2em;
-            }
+            height: 600px; /* important for calendar to show */
         }
     </style>
 </head>
@@ -183,15 +99,8 @@
         <button class="logout-btn" onclick="logout()">Logout</button>
     </div>
 
-    <div id="user-info">
-        <p><strong>Logged in as:</strong> <span id="current-user-email">Loading...</span></p>
-        <p><strong>User ID:</strong> <span id="current-user-id">Loading...</span></p>
-    </div>
-
     <p><strong>Date:</strong> <span id="current-date"></span></p>
     <p><strong>Time:</strong> <span id="current-time"></span></p>
-
-    <div id="daily-attendance-status"></div>
 
     <form id="attendance-form">
         <label>Attendance</label>
@@ -208,15 +117,18 @@
 
     <div id="message"></div>
 
-    <!-- Removed overall-stats/trend chart section -->
+    <div id="stats">
+        <h3>Today's Summary</h3>
+        <p><strong>Present:</strong> <span id="present-count">0</span></p>
+        <p><strong>Absent:</strong> <span id="absent-count">0</span></p>
+    </div>
 
     <h3>Attendance Calendar</h3>
     <div id="calendar"></div>
 
     <script>
-        // Firebase Configuration (Using global __firebase_config as per instructions)
-        
-       const firebaseConfig = {
+        // Firebase Config
+        const firebaseConfig = {
             apiKey: "AIzaSyASGzw8lSvOsmmf9OlPVSnhTjFg1NBOUbU",
             authDomain: "ad-addendence.firebaseapp.com",
             projectId: "ad-addendence",
@@ -225,20 +137,11 @@
             appId: "1:914725906557:web:c9ce2c108efb7abe9da914"
         };
 
-        // Initialize Firebase app if config is available
-        if (Object.keys(firebaseConfig).length > 0) {
-            firebase.initializeApp(firebaseConfig);
-        } else {
-            console.error("Firebase config is missing or invalid. Please check __firebase_config.");
-            document.body.innerHTML = "<h1>Application Error: Firebase configuration missing.</h1><p>Please contact support.</p>";
-        }
-
+        firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const db = firebase.firestore();
 
-        let currentUser = null;
-        let calendarInstance = null;
-
+        // Show current date and time on the page
         function updateDateTime() {
             const now = new Date();
             document.getElementById("current-date").innerText = now.toISOString().split("T")[0];
@@ -247,191 +150,141 @@
         updateDateTime();
         setInterval(updateDateTime, 1000);
 
-        auth.onAuthStateChanged(async (user) => {
-            if (!user) {
-                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                    try {
-                        await auth.signInWithCustomToken(__initial_auth_token);
-                    } catch (error) {
-                        console.error("Error signing in with custom token:", error);
-                        try {
-                            await auth.signInAnonymously();
-                        } catch (anonError) {
-                            console.error("Error signing in anonymously:", anonError);
-                            window.location.href = "login.html";
-                        }
-                    }
-                } else {
-                    try {
-                        await auth.signInAnonymously();
-                    } catch (anonError) {
-                        console.error("Error signing in anonymously:", anonError);
-                        window.location.href = "login.html";
-                    }
-                }
-            } else {
-                currentUser = user;
-                document.getElementById("current-user-email").innerText = user.email || "N/A";
-                document.getElementById("current-user-id").innerText = user.uid;
-                checkTodayAttendance();
-                loadCalendarEvents();
-            }
-        });
-
         const form = document.getElementById('attendance-form');
         const messageDiv = document.getElementById('message');
-        const dailyStatusDiv = document.getElementById('daily-attendance-status');
-        let hasMarkedToday = false;
 
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
 
-            if (!currentUser) {
-                setMessage("You are not logged in. Please refresh or log in.", "error");
-                return;
-            }
-
-            if (hasMarkedToday) {
-                setMessage("You have already marked attendance for today.", "error");
-                return;
-            }
-
             const attendance = document.getElementById('attendance').value;
             const task = document.getElementById('task').value;
-            const timestamp = new Date();
-            const date = timestamp.toISOString().split("T")[0];
-            const time = timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            const user = auth.currentUser;
+
+            if (!user) {
+                alert("You are not logged in");
+                return;
+            }
+
+            const date = new Date().toISOString().split("T")[0];
 
             try {
-                await db.collection(`artifacts/${appId}/users/${currentUser.uid}/attendance`).add({
-                    uid: currentUser.uid,
-                    email: currentUser.email,
+                // Check for duplicate attendance today
+                const snapshot = await db.collection("attendance")
+                    .where("uid", "==", user.uid)
+                    .where("date", "==", date)
+                    .get();
+
+                if (!snapshot.empty) {
+                    messageDiv.style.color = "red";
+                    messageDiv.innerText = "You already marked attendance for today.";
+                    return;
+                }
+
+                await db.collection("attendance").add({
+                    uid: user.uid,
+                    email: user.email,
                     attendance,
                     task,
                     date,
-                    time,
-                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                    time: new Date().toLocaleTimeString(),
                 });
 
-                setMessage("Attendance submitted successfully!", "success");
+                messageDiv.style.color = "green";
+                messageDiv.innerText = "Attendance submitted successfully!";
                 form.reset();
-                hasMarkedToday = true;
-                dailyStatusDiv.innerText = `You have marked ${attendance} for today.`;
-                form.style.display = 'none';
-                loadCalendarEvents();
+
+                // Refresh stats and calendar
+                await loadStats();
+                await loadCalendarEvents();
 
             } catch (err) {
-                setMessage("Error submitting attendance: " + err.message, "error");
-                console.error("Error submitting attendance:", err);
+                messageDiv.style.color = "red";
+                messageDiv.innerText = "Error: " + err.message;
             }
         });
 
-        async function checkTodayAttendance() {
-            if (!currentUser) return;
+        function logout() {
+            auth.signOut().then(() => {
+                window.location.href = "index.html";
+            }).catch((error) => {
+                alert("Error logging out: " + error.message);
+            });
+        }
+
+        async function loadStats() {
+            const user = auth.currentUser;
+            if (!user) return;
 
             const today = new Date().toISOString().split("T")[0];
-            try {
-                const snapshot = await db.collection(`artifacts/${appId}/users/${currentUser.uid}/attendance`)
-                                        .where("uid", "==", currentUser.uid)
-                                        .where("date", "==", today)
-                                        .limit(1)
-                                        .get();
+            const snapshot = await db.collection("attendance")
+                .where("uid", "==", user.uid)
+                .where("date", "==", today)
+                .get();
 
-                if (snapshot.docs.length > 0) {
-                    hasMarkedToday = true;
-                    dailyStatusDiv.innerText = `You have already marked ${snapshot.docs[0].data().attendance} for today.`;
-                    dailyStatusDiv.classList.add("marked-today");
-                    form.style.display = 'none';
-                } else {
-                    hasMarkedToday = false;
-                    dailyStatusDiv.innerText = "You have not marked attendance for today yet.";
-                    dailyStatusDiv.classList.remove("marked-today");
-                    form.style.display = 'block';
-                }
-            } catch (err) {
-                console.error("Error checking today's attendance:", err);
-                dailyStatusDiv.innerText = "Error checking today's attendance status.";
-                dailyStatusDiv.classList.add("error");
-            }
+            let presentCount = 0, absentCount = 0;
+
+            snapshot.forEach(doc => {
+                const data = doc.data();
+                if (data.attendance === "Present") presentCount++;
+                else if (data.attendance === "Absent") absentCount++;
+            });
+
+            document.getElementById("present-count").innerText = presentCount;
+            document.getElementById("absent-count").innerText = absentCount;
         }
 
         async function loadCalendarEvents() {
             const user = auth.currentUser;
             if (!user) return;
 
-            try {
-                const snapshot = await db.collection(`artifacts/${appId}/users/${user.uid}/attendance`)
-                    .where("uid", "==", user.uid)
-                    .get();
+            const snapshot = await db.collection("attendance")
+                .where("uid", "==", user.uid)
+                .get();
 
-                const events = [];
+            const events = [];
 
-                snapshot.forEach(doc => {
-                    const data = doc.data();
-                    events.push({
-                        title: data.attendance,
-                        start: data.date,
-                        backgroundColor: data.attendance === "Present" ? "green" : "red",
-                        borderColor: data.attendance === "Present" ? "darkgreen" : "darkred",
-                        textColor: 'white',
-                        extendedProps: {
-                            task: data.task
-                        }
-                    });
+            snapshot.forEach(doc => {
+                const data = doc.data();
+                events.push({
+                    title: data.attendance,
+                    start: data.date,
+                    color: data.attendance === "Present" ? "green" : "red"
                 });
-
-                const calendarEl = document.getElementById('calendar');
-
-                if (calendarInstance) {
-                    calendarInstance.destroy();
-                }
-
-                calendarInstance = new FullCalendar.Calendar(calendarEl, {
-                    initialView: 'dayGridMonth',
-                    events: events,
-                    headerToolbar: {
-                        left: 'prev,next today',
-                        center: 'title',
-                        right: 'dayGridMonth'
-                    },
-                    eventDidMount: function(info) {
-                        if (info.event.extendedProps.task) {
-                            info.el.title = `${info.event.title}: ${info.event.extendedProps.task}`;
-                        }
-                    },
-                    navLinks: true,
-                    editable: false,
-                    dayMaxEvents: true,
-                    eventContent: function(arg) {
-                        return { html: `<b>${arg.event.title}</b>` };
-                    }
-                });
-
-                calendarInstance.render();
-            } catch (err) {
-                console.error("Error loading calendar events:", err);
-                setMessage("Error loading calendar events: " + err.message, "error");
-            }
-        }
-
-        function setMessage(text, type) {
-            messageDiv.innerText = text;
-            messageDiv.className = 'message ' + type;
-            setTimeout(() => {
-                messageDiv.innerText = '';
-                messageDiv.className = 'message';
-            }, 5000);
-        }
-
-        function logout() {
-            auth.signOut().then(() => {
-                window.location.href = "login.html";
-            }).catch((error) => {
-                alert("Error logging out: " + error.message);
-                console.error("Logout Error:", error);
             });
+
+            const calendarEl = document.getElementById('calendar');
+
+            // Destroy previous calendar if exists
+            if (window.calendar) {
+                window.calendar.destroy();
+            }
+
+            window.calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                events: events,
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,timeGridWeek,timeGridDay'
+                },
+                navLinks: true,
+                editable: false,
+                dayMaxEvents: true
+            });
+
+            window.calendar.render();
         }
+
+        auth.onAuthStateChanged(user => {
+            if (!user) {
+                window.location.href = "login.html";
+            } else {
+                loadStats();
+                loadCalendarEvents();
+            }
+        });
     </script>
 
 </body>
+
 </html>
