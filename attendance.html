@@ -8,16 +8,20 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-
-    <!-- FullCalendar -->
-    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.css" rel="stylesheet" />
-    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/5.11.3/main.min.js"></script>
-
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
 
     <link rel="shortcut icon" href="logo.png" type="image/x-icon">
 
     <style>
+        #calendar {
+            margin-top: 40px;
+        }
+
+        #summary-container table {
+            margin-top: 20px;
+        }
+
         body {
             font-family: Arial, sans-serif;
             padding: 30px;
@@ -102,16 +106,6 @@
             text-align: center;
             font-size: 18px;
         }
-
-        /* Calendar Style */
-        #calendar {
-            margin-top: 20px;
-            max-width: 800px;
-            margin-left: auto;
-            margin-right: auto;
-            height: 600px;
-            /* Ensures the calendar displays properly */
-        }
     </style>
 </head>
 
@@ -157,8 +151,8 @@
         <p><strong>Total Absent Days:</strong> <span id="total-absent">0</span></p>
     </div>
 
-    <h3>Attendance Calendar</h3>
     <div id="calendar"></div>
+
 
     <script>
         // Firebase Config
@@ -174,6 +168,7 @@
 
 
 
+
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const db = firebase.firestore();
@@ -186,7 +181,64 @@
         updateDateTime();
         setInterval(updateDateTime, 1000);
 
-        async function loadCalendarEvents() {
+        const form = document.getElementById('attendance-form');
+        const messageDiv = document.getElementById('message');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const attendance = document.getElementById('attendance').value;
+            const task = document.getElementById('task').value;
+            const user = auth.currentUser;
+            if (!user) {
+                alert("You are not logged in");
+                return;
+            }
+
+            const date = new Date().toISOString().split("T")[0];
+
+            try {
+                const snapshot = await db.collection("attendance")
+                    .where("uid", "==", user.uid)
+                    .where("date", "==", date)
+                    .get();
+
+                if (!snapshot.empty) {
+                    messageDiv.style.color = "red";
+                    messageDiv.innerText = "You already marked attendance for today.";
+                    return;
+                }
+
+                await db.collection("attendance").add({
+                    uid: user.uid,
+                    email: user.email,
+                    attendance,
+                    task,
+                    date,
+                    time: new Date().toLocaleTimeString(),
+                });
+
+                messageDiv.style.color = "green";
+                messageDiv.innerText = "Attendance submitted successfully!";
+                form.reset();
+                await loadAttendanceRecords();
+                await calculateAttendance();
+
+            } catch (err) {
+                messageDiv.style.color = "red";
+                messageDiv.innerText = "Error: " + err.message;
+            }
+        });
+
+        function logout() {
+            auth.signOut().then(() => {
+                window.location.href = "index.html";
+            }).catch((error) => {
+                alert("Error logging out: " + error.message);
+            });
+        }
+
+        async function loadAttendanceRecords() {
             const user = auth.currentUser;
             if (!user) return;
 
@@ -194,33 +246,19 @@
                 .where("uid", "==", user.uid)
                 .get();
 
-            const events = [];
+            const tableBody = document.querySelector("#attendance-table tbody");
+            tableBody.innerHTML = "";
 
             snapshot.forEach(doc => {
                 const data = doc.data();
-                events.push({
-                    title: data.attendance,
-                    start: data.date,
-                    color: data.attendance === "Present" ? "green" : "red"
-                });
+                const row = `<tr>
+                    <td>${data.date}</td>
+                    <td>${data.attendance}</td>
+                    <td>${data.task}</td>
+                </tr>`;
+                tableBody.innerHTML += row;
             });
-
-            const calendarEl = document.getElementById('calendar');
-
-            // Ensure the previous calendar instance is properly removed
-            if (window.calendar && typeof window.calendar.destroy === "function") {
-                window.calendar.destroy();
-            }
-
-            // Create a new calendar instance
-            window.calendar = new FullCalendar.Calendar(calendarEl, {
-                initialView: 'dayGridMonth',
-                events: events
-            });
-
-            window.calendar.render();
         }
-
 
         async function calculateAttendance() {
             const user = auth.currentUser;
@@ -245,15 +283,38 @@
             if (!user) {
                 window.location.href = "login.html";
             } else {
-                loadCalendarEvents();
+                loadAttendanceRecords();
                 calculateAttendance();
             }
         });
 
-        function logout() {
-            auth.signOut().then(() => {
-                window.location.href = "index.html";
-            });
+        const calendarEl = document.getElementById("calendar");
+
+        const calendarEvents = [];
+        const calendar = new FullCalendar.Calendar(calendarEl, {
+            initialView: 'dayGridMonth',
+            events: calendarEvents
+        });
+        calendar.render();
+        function renderSummary() {
+            let html = `<table style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                      <tr>
+                        <th style="border: 1px solid #ddd; padding: 8px;">Name</th>
+                        <th style="border: 1px solid #ddd; padding: 8px;">Days Present</th>
+                        <th style="border: 1px solid #ddd; padding: 8px;">Days Absent</th>
+                      </tr>
+                    </thead>
+                    <tbody>`;
+            for (const [name, counts] of Object.entries(attendanceCounts)) {
+                html += `<tr>
+                        <td style="border: 1px solid #ddd; padding: 8px;">${name}</td>
+                        <td style="border: 1px solid #ddd; padding: 8px;">${counts.Present}</td>
+                        <td style="border: 1px solid #ddd; padding: 8px;">${counts.Absent}</td>
+                    </tr>`;
+            }
+            html += `</tbody></table>`;
+            summaryContainer.innerHTML = html;
         }
     </script>
 
