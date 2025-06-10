@@ -264,7 +264,7 @@
                 const db = firebase.firestore();
                 const today = new Date().toISOString().split("T")[0];
 
-              
+
 
                 // Get the last 7 days (or more if needed)
                 for (let i = 1; i <= 7; i++) { // Check the past 7 days
@@ -279,7 +279,6 @@
                         .get();
 
                     if (attendanceSnapshot.empty) {
-                        // Mark as Absent for that day
                         await db.collection("attendance").add({
                             uid: user.uid,
                             email: user.email,
@@ -290,10 +289,15 @@
                         });
 
                         console.log(`Marked user absent for ${formattedDate}`);
+
+                        // Update UI notification
+                        document.getElementById("message").style.color = "red";
+                        document.getElementById("message").innerText = `You were marked absent for ${formattedDate}.`;
                     }
+
                 }
 
-        
+
             }
         });
 
@@ -313,6 +317,7 @@
 
             const snapshot = await db.collection("attendance")
                 .where("uid", "==", user.uid)
+                .orderBy("date", "desc") // Sort by latest first
                 .get();
 
             const tableBody = document.querySelector("#attendance-table tbody");
@@ -321,13 +326,14 @@
             snapshot.forEach(doc => {
                 const data = doc.data();
                 const row = `<tr>
-                    <td>${data.date}</td>
-                    <td>${data.attendance}</td>
-                    <td>${data.task}</td>
-                </tr>`;
+            <td>${data.date}</td>
+            <td>${data.attendance}</td>
+            <td>${data.task}</td>
+        </tr>`;
                 tableBody.innerHTML += row;
             });
         }
+
 
         async function calculateAttendance() {
             const user = auth.currentUser;
