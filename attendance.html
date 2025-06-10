@@ -113,8 +113,15 @@
 
     <div class="top-bar">
         <h2>Mark Your Daily Attendance</h2>
+
+    </div>
+
+    <div class="top-bar">
+        <h2>Welcome, <span id="user-name">Loading...</span></h2>
+        <p>Email: <span id="user-email">Loading...</span></p>
         <button class="logout-btn" onclick="logout()">Logout</button>
     </div>
+
 
     <p><strong>Date:</strong> <span id="current-date"></span></p>
     <p><strong>Time:</strong> <span id="current-time"></span></p>
@@ -230,6 +237,18 @@
             }
         });
 
+        auth.onAuthStateChanged(user => {
+            if (!user) {
+                window.location.href = "login.html";
+            } else {
+                document.getElementById("user-name").innerText = user.displayName || "User";
+                document.getElementById("user-email").innerText = user.email;
+                loadAttendanceRecords();
+                calculateAttendance();
+            }
+        });
+
+
         function logout() {
             auth.signOut().then(() => {
                 window.location.href = "index.html";
@@ -289,7 +308,7 @@
         });
 
         // ckeck it is personly
-        
+
     </script>
 
 </body>
