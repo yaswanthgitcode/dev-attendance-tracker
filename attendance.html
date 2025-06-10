@@ -9,6 +9,10 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
 
+    <!-- FullCalendar -->
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.js"></script>
+
     <link rel="shortcut icon" href="logo.png" type="image/x-icon">
 
     <style>
@@ -94,6 +98,15 @@
             text-align: center;
             font-size: 18px;
         }
+
+        /* Calendar Style */
+        #calendar {
+            margin-top: 20px;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 600px; /* Ensures the calendar displays properly */
+        }
     </style>
 </head>
 
@@ -139,8 +152,12 @@
         <p><strong>Total Absent Days:</strong> <span id="total-absent">0</span></p>
     </div>
 
+    <h3>Attendance Calendar</h3>
+    <div id="calendar"></div>
+
     <script>
-         // Firebase Config
+        // Firebase Config
+          // Firebase Config
         const firebaseConfig = {
             apiKey: "AIzaSyASGzw8lSvOsmmf9OlPVSnhTjFg1NBOUbU",
             authDomain: "ad-addendence.firebaseapp.com",
@@ -164,64 +181,7 @@
         updateDateTime();
         setInterval(updateDateTime, 1000);
 
-        const form = document.getElementById('attendance-form');
-        const messageDiv = document.getElementById('message');
-
-        form.addEventListener('submit', async (e) => {
-            e.preventDefault();
-
-            const attendance = document.getElementById('attendance').value;
-            const task = document.getElementById('task').value;
-            const user = auth.currentUser;
-            if (!user) {
-                alert("You are not logged in");
-                return;
-            }
-
-            const date = new Date().toISOString().split("T")[0];
-
-            try {
-                const snapshot = await db.collection("attendance")
-                    .where("uid", "==", user.uid)
-                    .where("date", "==", date)
-                    .get();
-
-                if (!snapshot.empty) {
-                    messageDiv.style.color = "red";
-                    messageDiv.innerText = "You already marked attendance for today.";
-                    return;
-                }
-
-                await db.collection("attendance").add({
-                    uid: user.uid,
-                    email: user.email,
-                    attendance,
-                    task,
-                    date,
-                    time: new Date().toLocaleTimeString(),
-                });
-
-                messageDiv.style.color = "green";
-                messageDiv.innerText = "Attendance submitted successfully!";
-                form.reset();
-                await loadAttendanceRecords();
-                await calculateAttendance();
-
-            } catch (err) {
-                messageDiv.style.color = "red";
-                messageDiv.innerText = "Error: " + err.message;
-            }
-        });
-
-        function logout() {
-            auth.signOut().then(() => {
-                window.location.href = "index.html";
-            }).catch((error) => {
-                alert("Error logging out: " + error.message);
-            });
-        }
-
-        async function loadAttendanceRecords() {
+        async function loadCalendarEvents() {
             const user = auth.currentUser;
             if (!user) return;
 
@@ -229,18 +189,28 @@
                 .where("uid", "==", user.uid)
                 .get();
 
-            const tableBody = document.querySelector("#attendance-table tbody");
-            tableBody.innerHTML = "";
+            const events = [];
 
             snapshot.forEach(doc => {
                 const data = doc.data();
-                const row = `<tr>
-                    <td>${data.date}</td>
-                    <td>${data.attendance}</td>
-                    <td>${data.task}</td>
-                </tr>`;
-                tableBody.innerHTML += row;
+                events.push({
+                    title: data.attendance,
+                    start: data.date,
+                    color: data.attendance === "Present" ? "green" : "red"
+                });
             });
+
+            const calendarEl = document.getElementById('calendar');
+            if (window.calendar) {
+                window.calendar.destroy();
+            }
+
+            window.calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                events: events
+            });
+
+            window.calendar.render();
         }
 
         async function calculateAttendance() {
@@ -266,7 +236,7 @@
             if (!user) {
                 window.location.href = "login.html";
             } else {
-                loadAttendanceRecords();
+                loadCalendarEvents();
                 calculateAttendance();
             }
         });
