@@ -2,41 +2,34 @@
 <html>
 
 <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Developer Attendance</title>
-    <!-- Firebase SDKs (using compat versions as per original code) -->
+
+    <!-- Firebase -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-    <!-- Chart.js for attendance trends chart -->
+
+    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- FullCalendar -->
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.js"></script>
+
     <link rel="shortcut icon" href="logo.png" type="image/x-icon">
+
     <style>
         body {
-            font-family: 'Inter', Arial, sans-serif;
-            /* Using Inter font as per guidelines, fallback to Arial */
-            padding: 20px;
-            /* Reduced padding for better mobile view */
+            font-family: Arial, sans-serif;
+            padding: 30px;
             max-width: 800px;
-            /* Increased max-width to accommodate new features */
             margin: auto;
-            background-color: #f0f2f5;
-            /* Light background color */
-            color: #333;
         }
 
         .top-bar {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
-            padding: 10px 0;
-            border-bottom: 1px solid #ddd;
-        }
-
-        h2 {
-            color: #2c3e50;
-            margin: 0;
         }
 
         .logout-btn {
@@ -46,9 +39,6 @@
             padding: 8px 16px;
             cursor: pointer;
             font-size: 14px;
-            border-radius: 5px;
-            /* Rounded corners */
-            transition: background-color 0.3s ease;
         }
 
         .logout-btn:hover {
@@ -58,221 +48,47 @@
         label {
             display: block;
             margin-top: 15px;
-            font-weight: bold;
-            color: #555;
         }
 
         textarea,
         input,
         select {
-            width: calc(100% - 20px);
-            /* Account for padding */
+            width: 100%;
             padding: 10px;
             margin-top: 5px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            /* Rounded corners */
-            box-sizing: border-box;
-            /* Include padding in width */
-            font-size: 16px;
         }
 
         button[type="submit"] {
             margin-top: 20px;
-            padding: 12px;
+            padding: 10px;
             width: 100%;
             background-color: #4CAF50;
             color: white;
             border: none;
-            font-size: 18px;
+            font-size: 16px;
             cursor: pointer;
-            border-radius: 5px;
-            /* Rounded corners */
-            transition: background-color 0.3s ease;
         }
 
         button[type="submit"]:hover {
             background-color: #45a049;
         }
 
-        #message,
-        #daily-attendance-status {
+        #message {
             margin-top: 15px;
             font-weight: bold;
-            padding: 10px;
-            border-radius: 5px;
-            text-align: center;
         }
 
-        #message.success {
-            background-color: #d4edda;
-            color: #155724;
-        }
-
-        #message.error {
-            background-color: #f8d7da;
-            color: #721c24;
-        }
-
-        #daily-attendance-status {
-            background-color: #fff3cd;
-            color: #856404;
-            margin-bottom: 20px;
-        }
-
-        #user-info {
-            margin-top: 20px;
-            padding: 10px;
-            background-color: #e9ecef;
-            border-radius: 5px;
-            color: #495057;
-            font-size: 0.9em;
-        }
-
-        #user-info strong {
-            color: #343a40;
-        }
-
-        #past-attendance-section {
+        #stats {
             margin-top: 40px;
+            border-top: 1px solid #ddd;
             padding-top: 20px;
-            border-top: 1px solid #eee;
-            background-color: #ffffff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
-        #total-counts {
-            display: flex;
-            justify-content: space-around;
-            margin-bottom: 20px;
-            font-size: 1.1em;
-            font-weight: bold;
-        }
-
-        #total-counts div {
-            padding: 10px 15px;
-            border-radius: 5px;
-            background-color: #f8f9fa;
-            border: 1px solid #dee2e6;
-        }
-
-        #calendar-container {
-            margin-bottom: 30px;
-            text-align: center;
-        }
-
-        #calendar-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-            font-size: 1.2em;
-            font-weight: bold;
-            color: #2c3e50;
-        }
-
-        #calendar-header button {
-            background: none;
-            border: none;
-            font-size: 1.5em;
-            cursor: pointer;
-            color: #007bff;
-            padding: 5px 10px;
-            border-radius: 5px;
-        }
-
-        #calendar-header button:hover {
-            background-color: #e9ecef;
-        }
-
-        #calendar-grid {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.9em;
-        }
-
-        #calendar-grid th,
-        #calendar-grid td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: center;
-            vertical-align: top;
-        }
-
-        #calendar-grid th {
-            background-color: #f2f2f2;
-            color: #555;
-        }
-
-        #calendar-grid td {
-            height: 60px;
-            /* Adjust cell height for better spacing */
-        }
-
-        .calendar-day.present {
-            background-color: #e6ffe6;
-            /* Light green for present */
-        }
-
-        .calendar-day.absent {
-            background-color: #ffe6e6;
-            /* Light red for absent */
-        }
-
-        .calendar-day.today {
-            border: 2px solid #007bff;
-            /* Blue border for today */
-            font-weight: bold;
-        }
-
-        #attendance-chart {
-            width: 100%;
-            max-height: 300px;
-            /* Limit chart height */
-        }
-
-        /* Responsive adjustments */
-        @media (max-width: 600px) {
-            body {
-                padding: 15px;
-            }
-
-            .top-bar {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-
-            .logout-btn {
-                margin-top: 10px;
-            }
-
-            #total-counts {
-                flex-direction: column;
-                align-items: center;
-            }
-
-            #total-counts div {
-                margin-bottom: 10px;
-                width: 80%;
-                /* Make them stack */
-            }
-
-            #calendar-grid th,
-            #calendar-grid td {
-                padding: 5px;
-                height: 40px;
-                font-size: 0.8em;
-            }
-
-            #calendar-header {
-                font-size: 1em;
-            }
-
-            #calendar-header button {
-                font-size: 1.2em;
-            }
+        #calendar {
+            margin-top: 20px;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
         }
     </style>
 </head>
@@ -284,68 +100,37 @@
         <button class="logout-btn" onclick="logout()">Logout</button>
     </div>
 
-    <div id="user-info">
-        <p><strong>Logged in as:</strong> <span id="current-user-email">Loading...</span></p>
-        <p><strong>User ID:</strong> <span id="current-user-id">Loading...</span></p>
-    </div>
-
     <p><strong>Date:</strong> <span id="current-date"></span></p>
     <p><strong>Time:</strong> <span id="current-time"></span></p>
 
-    <div id="daily-attendance-status"></div>
-
     <form id="attendance-form">
-        <label for="attendance">Attendance</label>
+        <label>Attendance</label>
         <select id="attendance">
             <option value="Present">Present</option>
             <option value="Absent">Absent</option>
         </select>
 
-        <label for="task">What did you work on today?</label>
+        <label>What did you work on today?</label>
         <textarea id="task" rows="4" required></textarea>
 
         <button type="submit">Submit Attendance</button>
     </form>
 
-    <div id="message" class="message"></div>
+    <div id="message"></div>
 
-    <div id="past-attendance-section">
-        <h3>Your Attendance History</h3>
+    <div id="stats">
+        <h3>Today's Summary</h3>
+        <p><strong>Present:</strong> <span id="present-count">0</span></p>
+        <p><strong>Absent:</strong> <span id="absent-count">0</span></p>
 
-        <div id="total-counts">
-            <div>Total Present: <span id="total-present">0</span></div>
-            <div>Total Absent: <span id="total-absent">0</span></div>
-        </div>
-
-        <div id="calendar-container">
-            <div id="calendar-header">
-                <button id="prevMonth">&lt;</button>
-                <span id="current-month-year"></span>
-                <button id="nextMonth">&gt;</button>
-            </div>
-            <table id="calendar-grid">
-                <thead>
-                    <tr>
-                        <th>Sun</th>
-                        <th>Mon</th>
-                        <th>Tue</th>
-                        <th>Wed</th>
-                        <th>Thu</th>
-                        <th>Fri</th>
-                        <th>Sat</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <!-- Calendar days will be generated here -->
-                </tbody>
-            </table>
-        </div>
-
-        <h4>Monthly Attendance Trends</h4>
-        <canvas id="attendance-chart"></canvas>
+        <canvas id="trendChart" width="400" height="200"></canvas>
     </div>
 
+    <h3>Attendance Calendar</h3>
+    <div id="calendar"></div>
+
     <script>
+        // Firebase Config
         const firebaseConfig = {
             apiKey: "AIzaSyASGzw8lSvOsmmf9OlPVSnhTjFg1NBOUbU",
             authDomain: "ad-addendence.firebaseapp.com",
@@ -355,24 +140,9 @@
             appId: "1:914725906557:web:c9ce2c108efb7abe9da914"
         };
 
-        // Firebase Configuration (Using global __firebase_config as per instructions)
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        
-
-        // Initialize Firebase app if config is available
-        if (Object.keys(firebaseConfig).length > 0) {
-            firebase.initializeApp(firebaseConfig);
-        } else {
-            console.error("Firebase config is missing or invalid. Please check __firebase_config.");
-            // Display a user-friendly message or redirect if Firebase can't be initialized
-            document.body.innerHTML = "<h1>Application Error: Firebase configuration missing.</h1><p>Please contact support.</p>";
-        }
-
+        firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const db = firebase.firestore();
-
-        let currentUser = null; // Store the authenticated user object
-        let attendanceRecords = []; // Store all fetched attendance records
 
         // Show current date and time on the page
         function updateDateTime() {
@@ -380,347 +150,200 @@
             document.getElementById("current-date").innerText = now.toISOString().split("T")[0];
             document.getElementById("current-time").innerText = now.toLocaleTimeString();
         }
-        setInterval(updateDateTime, 1000); // Update every second
-        updateDateTime(); // Call initially
+        updateDateTime();
+        setInterval(updateDateTime, 1000);
 
-        // --- Firebase Authentication Handling ---
-        auth.onAuthStateChanged(async (user) => {
-            if (!user) {
-                // If no user is logged in, attempt sign-in
-                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                    try {
-                        await auth.signInWithCustomToken(__initial_auth_token);
-                        // The onAuthStateChanged listener will fire again with the authenticated user
-                    } catch (error) {
-                        console.error("Error signing in with custom token:", error);
-                        // Fallback to anonymous sign-in if custom token fails
-                        try {
-                            await auth.signInAnonymously();
-                        } catch (anonError) {
-                            console.error("Error signing in anonymously:", anonError);
-                            // If even anonymous fails, redirect to login (or show error)
-                            window.location.href = "login.html";
-                        }
-                    }
-                } else {
-                    // No custom token, attempt anonymous sign-in directly
-                    try {
-                        await auth.signInAnonymously();
-                    } catch (anonError) {
-                        console.error("Error signing in anonymously:", anonError);
-                        window.location.href = "login.html"; // Redirect if anonymous fails
-                    }
-                }
-            } else {
-                // User is authenticated
-                currentUser = user; // Set current user
-                document.getElementById("current-user-email").innerText = user.email || "N/A";
-                document.getElementById("current-user-id").innerText = user.uid; // Display user ID
-
-                // Load attendance data and check today's status only after user is authenticated
-                loadAttendanceData();
-                checkTodayAttendance();
-            }
-        });
-
-        // --- Attendance Form Submission ---
         const form = document.getElementById('attendance-form');
         const messageDiv = document.getElementById('message');
-        const dailyStatusDiv = document.getElementById('daily-attendance-status');
-        let hasMarkedToday = false; // Flag to prevent multiple submissions
 
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
 
-            if (!currentUser) {
-                setMessage("You are not logged in. Please refresh or log in.", "error");
-                return;
-            }
-
-            if (hasMarkedToday) {
-                setMessage("You have already marked attendance for today.", "error");
-                return;
-            }
-
             const attendance = document.getElementById('attendance').value;
             const task = document.getElementById('task').value;
-            const timestamp = new Date();
-            const date = timestamp.toISOString().split("T")[0]; // YYYY-MM-DD
-            const time = timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            const user = auth.currentUser;
+
+            if (!user) {
+                alert("You are not logged in");
+                return;
+            }
+
+            const date = new Date().toISOString().split("T")[0];
 
             try {
-                // Store attendance with user's UID for private access
-                await db.collection(`artifacts/${appId}/users/${currentUser.uid}/attendance`).add({
-                    uid: currentUser.uid,
-                    email: currentUser.email, // Store email for easier identification
+                // Check for duplicate attendance today
+                const snapshot = await db.collection("attendance")
+                    .where("uid", "==", user.uid)
+                    .where("date", "==", date)
+                    .get();
+
+                if (!snapshot.empty) {
+                    messageDiv.style.color = "red";
+                    messageDiv.innerText = "You already marked attendance for today.";
+                    return;
+                }
+
+                await db.collection("attendance").add({
+                    uid: user.uid,
+                    email: user.email,
                     attendance,
                     task,
                     date,
-                    time,
-                    timestamp: firebase.firestore.FieldValue.serverTimestamp() // Store server timestamp for accurate ordering
+                    time: new Date().toLocaleTimeString(),
                 });
 
-                setMessage("Attendance submitted successfully!", "success");
+                messageDiv.style.color = "green";
+                messageDiv.innerText = "Attendance submitted successfully!";
                 form.reset();
-                hasMarkedToday = true; // Set flag
-                dailyStatusDiv.innerText = `You have marked ${attendance} for today.`;
-                form.style.display = 'none'; // Hide form after submission
-                loadAttendanceData(); // Reload data to update calendar and chart
+
+                // Refresh stats and calendar
+                await loadStats();
+                await loadCalendarEvents();
+
             } catch (err) {
-                setMessage("Error submitting attendance: " + err.message, "error");
-                console.error("Error submitting attendance:", err);
+                messageDiv.style.color = "red";
+                messageDiv.innerText = "Error: " + err.message;
             }
         });
 
-        // --- Load and Display Attendance Data ---
-        async function loadAttendanceData() {
-            if (!currentUser) {
-                console.warn("User not authenticated yet. Cannot load attendance data.");
-                return;
-            }
-
-            try {
-                // Fetch attendance records for the current user, ordered by date
-                const snapshot = await db.collection(`artifacts/${appId}/users/${currentUser.uid}/attendance`)
-                    .where("uid", "==", currentUser.uid)
-                    .orderBy("date", "asc")
-                    .get();
-
-                attendanceRecords = [];
-                snapshot.forEach(doc => {
-                    attendanceRecords.push({ id: doc.id, ...doc.data() });
-                });
-
-                displayAttendanceHistory(attendanceRecords);
-                calculateAndDisplayTotals(attendanceRecords);
-                renderAttendanceChart(attendanceRecords);
-
-            } catch (err) {
-                setMessage("Error loading attendance history: " + err.message, "error");
-                console.error("Error loading attendance history:", err);
-            }
+        function logout() {
+            auth.signOut().then(() => {
+                window.location.href = "index.html";
+            }).catch((error) => {
+                alert("Error logging out: " + error.message);
+            });
         }
 
-        // --- Check Today's Attendance ---
-        async function checkTodayAttendance() {
-            if (!currentUser) return;
+        async function loadStats() {
+            const user = auth.currentUser;
+            if (!user) return;
 
             const today = new Date().toISOString().split("T")[0];
-            try {
-                const snapshot = await db.collection(`artifacts/${appId}/users/${currentUser.uid}/attendance`)
-                    .where("uid", "==", currentUser.uid)
-                    .where("date", "==", today)
-                    .limit(1)
-                    .get();
+            const snapshot = await db.collection("attendance")
+                .where("uid", "==", user.uid)
+                .get();
 
-                if (snapshot.docs.length > 0) {
-                    hasMarkedToday = true;
-                    dailyStatusDiv.innerText = `You have already marked ${snapshot.docs[0].data().attendance} for today.`;
-                    dailyStatusDiv.classList.add("marked-today");
-                    form.style.display = 'none'; // Hide the form if already marked
-                } else {
-                    hasMarkedToday = false;
-                    dailyStatusDiv.innerText = "You have not marked attendance for today yet.";
-                    dailyStatusDiv.classList.remove("marked-today");
-                    form.style.display = 'block'; // Show the form
+            let presentCount = 0, absentCount = 0;
+            const dailyStats = {};
+
+            snapshot.forEach(doc => {
+                const data = doc.data();
+                if (data.date === today) {
+                    if (data.attendance === "Present") presentCount++;
+                    if (data.attendance === "Absent") absentCount++;
                 }
-            } catch (err) {
-                console.error("Error checking today's attendance:", err);
-                dailyStatusDiv.innerText = "Error checking today's attendance status.";
-                dailyStatusDiv.classList.add("error");
-            }
-        }
 
-        // --- Display Attendance History (Calendar) ---
-        let currentCalendarDate = new Date(); // Tracks the month displayed in the calendar
-
-        function displayAttendanceHistory(records) {
-            generateCalendar(currentCalendarDate.getFullYear(), currentCalendarDate.getMonth(), records);
-        }
-
-        const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-
-        function generateCalendar(year, month, records) {
-            const calendarGridBody = document.querySelector('#calendar-grid tbody');
-            calendarGridBody.innerHTML = ''; // Clear previous days
-
-            document.getElementById('current-month-year').innerText = `${monthNames[month]} ${year}`;
-
-            const firstDayOfMonth = new Date(year, month, 1).getDay(); // 0 for Sunday, 1 for Monday...
-            const daysInMonth = new Date(year, month + 1, 0).getDate(); // Get last day of month
-
-            let date = 1;
-            for (let i = 0; i < 6; i++) { // Max 6 rows for calendar
-                const row = calendarGridBody.insertRow();
-                for (let j = 0; j < 7; j++) { // 7 days a week
-                    const cell = row.insertCell();
-                    if (i === 0 && j < firstDayOfMonth) {
-                        cell.innerText = ''; // Empty cells before the first day of the month
-                    } else if (date > daysInMonth) {
-                        break; // Stop if all days of the month are rendered
-                    } else {
-                        const currentDateString = `${year}-${String(month + 1).padStart(2, '0')}-${String(date).padStart(2, '0')}`;
-                        const record = records.find(r => r.date === currentDateString);
-
-                        cell.innerText = date;
-                        cell.classList.add('calendar-day');
-
-                        if (record) {
-                            if (record.attendance === 'Present') {
-                                cell.classList.add('present');
-                                cell.title = `Present: ${record.task}`;
-                            } else if (record.attendance === 'Absent') {
-                                cell.classList.add('absent');
-                                cell.title = `Absent: ${record.task}`;
-                            }
-                        }
-
-                        // Mark today's date
-                        const today = new Date();
-                        if (year === today.getFullYear() && month === today.getMonth() && date === today.getDate()) {
-                            cell.classList.add('today');
-                        }
-                        date++;
-                    }
+                if (!dailyStats[data.date]) {
+                    dailyStats[data.date] = { present: 0, absent: 0 };
                 }
-            }
-        }
-
-        document.getElementById('prevMonth').addEventListener('click', () => {
-            currentCalendarDate.setMonth(currentCalendarDate.getMonth() - 1);
-            loadAttendanceData(); // Re-render calendar with updated month
-        });
-
-        document.getElementById('nextMonth').addEventListener('click', () => {
-            currentCalendarDate.setMonth(currentCalendarDate.getMonth() + 1);
-            loadAttendanceData(); // Re-render calendar with updated month
-        });
-
-
-        // --- Calculate and Display Totals ---
-        function calculateAndDisplayTotals(records) {
-            let totalPresent = 0;
-            let totalAbsent = 0;
-            records.forEach(record => {
-                if (record.attendance === 'Present') {
-                    totalPresent++;
-                } else if (record.attendance === 'Absent') {
-                    totalAbsent++;
-                }
-            });
-            document.getElementById("total-present").innerText = totalPresent;
-            document.getElementById("total-absent").innerText = totalAbsent;
-        }
-
-        // --- Render Attendance Chart ---
-        let attendanceChartInstance = null; // To store the chart instance
-
-        function renderAttendanceChart(records) {
-            const monthlyData = {}; // { 'YYYY-MM': { present: 0, absent: 0 } }
-
-            records.forEach(record => {
-                const monthYear = record.date.substring(0, 7); // 'YYYY-MM'
-                if (!monthlyData[monthYear]) {
-                    monthlyData[monthYear] = { present: 0, absent: 0 };
-                }
-                if (record.attendance === 'Present') {
-                    monthlyData[monthYear].present++;
-                } else if (record.attendance === 'Absent') {
-                    monthlyData[monthYear].absent++;
-                }
+                if (data.attendance === "Present") dailyStats[data.date].present++;
+                else dailyStats[data.date].absent++;
             });
 
-            // Sort months for chronological display
-            const sortedMonths = Object.keys(monthlyData).sort();
+            document.getElementById("present-count").innerText = presentCount;
+            document.getElementById("absent-count").innerText = absentCount;
 
-            const chartLabels = sortedMonths.map(my => {
-                const [year, month] = my.split('-');
-                return `${monthNames[parseInt(month) - 1]} ${year}`;
-            });
-            const presentCounts = sortedMonths.map(my => monthlyData[my].present);
-            const absentCounts = sortedMonths.map(my => monthlyData[my].absent);
+            drawChart(dailyStats);
+        }
 
-            const ctx = document.getElementById('attendance-chart').getContext('2d');
+        function drawChart(stats) {
+            const labels = Object.keys(stats).sort();
+            const presentData = labels.map(date => stats[date].present);
+            const absentData = labels.map(date => stats[date].absent);
 
-            // Destroy previous chart instance if it exists
-            if (attendanceChartInstance) {
-                attendanceChartInstance.destroy();
+            const ctx = document.getElementById("trendChart").getContext("2d");
+
+            if (window.myChart) {
+                window.myChart.destroy();
             }
 
-            attendanceChartInstance = new Chart(ctx, {
-                type: 'bar', // Bar chart for comparison
+            window.myChart = new Chart(ctx, {
+                type: 'line',
                 data: {
-                    labels: chartLabels,
+                    labels,
                     datasets: [
                         {
                             label: 'Present',
-                            data: presentCounts,
-                            backgroundColor: 'rgba(76, 175, 80, 0.7)', // Green
-                            borderColor: 'rgba(76, 175, 80, 1)',
-                            borderWidth: 1
+                            borderColor: 'green',
+                            data: presentData,
+                            fill: false,
+                            tension: 0.2,
                         },
                         {
                             label: 'Absent',
-                            data: absentCounts,
-                            backgroundColor: 'rgba(244, 67, 54, 0.7)', // Red
-                            borderColor: 'rgba(244, 67, 54, 1)',
-                            borderWidth: 1
+                            borderColor: 'red',
+                            data: absentData,
+                            fill: false,
+                            tension: 0.2,
                         }
                     ]
                 },
                 options: {
                     responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        x: {
-                            stacked: true, // Stack bars for better visual comparison
-                            title: {
-                                display: true,
-                                text: 'Month'
-                            }
-                        },
-                        y: {
-                            stacked: true,
-                            beginAtZero: true,
-                            title: {
-                                display: true,
-                                text: 'Number of Days'
-                            },
-                            ticks: {
-                                precision: 0 // Ensure integer ticks for counts
-                            }
-                        }
-                    },
                     plugins: {
+                        legend: {
+                            position: 'top',
+                        },
                         title: {
                             display: true,
-                            text: 'Monthly Attendance Overview'
+                            text: 'Attendance Trends'
                         }
                     }
                 }
             });
         }
 
+        async function loadCalendarEvents() {
+            const user = auth.currentUser;
+            if (!user) return;
 
-        // --- Utility function for messages ---
-        function setMessage(text, type) {
-            messageDiv.innerText = text;
-            messageDiv.className = 'message ' + type; // Add type class for styling (success/error)
-            setTimeout(() => {
-                messageDiv.innerText = '';
-                messageDiv.className = 'message';
-            }, 5000); // Clear message after 5 seconds
-        }
+            const snapshot = await db.collection("attendance")
+                .where("uid", "==", user.uid)
+                .get();
 
-        // --- Logout Function ---
-        function logout() {
-            auth.signOut().then(() => {
-                window.location.href = "login.html"; // Redirect to login page after logout
-            }).catch((error) => {
-                alert("Error logging out: " + error.message); // Use alert for critical auth errors
-                console.error("Logout Error:", error);
+            const events = [];
+
+            snapshot.forEach(doc => {
+                const data = doc.data();
+                events.push({
+                    title: data.attendance,
+                    start: data.date,
+                    color: data.attendance === "Present" ? "green" : "red"
+                });
             });
+
+            const calendarEl = document.getElementById('calendar');
+
+            // Clear previous calendar if any
+            if (window.calendar) {
+                window.calendar.destroy();
+            }
+
+            window.calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                events: events,
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,timeGridWeek,timeGridDay'
+                },
+                eventColor: 'blue',
+                navLinks: true,
+                editable: false,
+                dayMaxEvents: true
+            });
+
+            window.calendar.render();
         }
+
+        auth.onAuthStateChanged(user => {
+            if (!user) {
+                window.location.href = "login.html";
+            } else {
+                loadStats();
+                loadCalendarEvents();
+            }
+        });
     </script>
 
 </body>
