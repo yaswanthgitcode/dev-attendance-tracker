@@ -9,10 +9,6 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
 
-    <!-- FullCalendar -->
-    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.css" rel="stylesheet" />
-    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.js"></script>
-
     <link rel="shortcut icon" href="logo.png" type="image/x-icon">
 
     <style>
@@ -48,7 +44,6 @@
         }
 
         textarea,
-        input,
         select {
             width: 100%;
             padding: 10px;
@@ -75,19 +70,20 @@
             font-weight: bold;
         }
 
-        #stats {
-            margin-top: 40px;
-            border-top: 1px solid #ddd;
-            padding-top: 20px;
+        #attendance-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
         }
 
-        /* Fix: Give calendar container a height */
-        #calendar {
-            margin-top: 20px;
-            max-width: 800px;
-            margin-left: auto;
-            margin-right: auto;
-            height: 600px; /* important for calendar to show */
+        #attendance-table th, #attendance-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        #attendance-table th {
+            background-color: #f2f2f2;
         }
     </style>
 </head>
@@ -117,17 +113,19 @@
 
     <div id="message"></div>
 
-    <div id="stats">
-        <h3>Today's Summary</h3>
-        <p><strong>Present:</strong> <span id="present-count">0</span></p>
-        <p><strong>Absent:</strong> <span id="absent-count">0</span></p>
-    </div>
-
-    <h3>Attendance Calendar</h3>
-    <div id="calendar"></div>
+    <h3>Attendance Records</h3>
+    <table id="attendance-table">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Attendance</th>
+                <th>Task</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
 
     <script>
-        // Firebase Config
           // Firebase Config
         const firebaseConfig = {
             apiKey: "AIzaSyASGzw8lSvOsmmf9OlPVSnhTjFg1NBOUbU",
@@ -137,7 +135,6 @@
             messagingSenderId: "914725906557",
             appId: "1:914725906557:web:c9ce2c108efb7abe9da914"
         };
-
 
 
         firebase.initializeApp(firebaseConfig);
@@ -157,6 +154,7 @@
 
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
+
             const attendance = document.getElementById('attendance').value;
             const task = document.getElementById('task').value;
             const user = auth.currentUser;
@@ -191,8 +189,7 @@
                 messageDiv.style.color = "green";
                 messageDiv.innerText = "Attendance submitted successfully!";
                 form.reset();
-                await loadStats();
-                await loadCalendarEvents();
+                await loadAttendanceRecords();
 
             } catch (err) {
                 messageDiv.style.color = "red";
@@ -208,7 +205,7 @@
             });
         }
 
-        async function loadCalendarEvents() {
+        async function loadAttendanceRecords() {
             const user = auth.currentUser;
             if (!user) return;
 
@@ -216,36 +213,25 @@
                 .where("uid", "==", user.uid)
                 .get();
 
-            const events = [];
+            const tableBody = document.querySelector("#attendance-table tbody");
+            tableBody.innerHTML = "";
 
             snapshot.forEach(doc => {
                 const data = doc.data();
-                events.push({
-                    title: data.attendance,
-                    start: data.date,
-                    color: data.attendance === "Present" ? "green" : "red"
-                });
+                const row = `<tr>
+                    <td>${data.date}</td>
+                    <td>${data.attendance}</td>
+                    <td>${data.task}</td>
+                </tr>`;
+                tableBody.innerHTML += row;
             });
-
-            const calendarEl = document.getElementById('calendar');
-            if (window.calendar) {
-                window.calendar.destroy();
-                window.calendar = null;
-            }
-
-            window.calendar = new FullCalendar.Calendar(calendarEl, {
-                initialView: 'dayGridMonth',
-                events: events
-            });
-
-            window.calendar.render();
         }
 
         auth.onAuthStateChanged(user => {
             if (!user) {
                 window.location.href = "login.html";
             } else {
-                loadCalendarEvents();
+                loadAttendanceRecords();
             }
         });
     </script>
