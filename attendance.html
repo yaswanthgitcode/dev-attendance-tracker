@@ -129,19 +129,18 @@
     <script>
         // Firebase Config
         const firebaseConfig = {
-            apiKey: "AIzaSyASGzw8lSvOsmmf9OlPVSnhTjFg1NBOUbU",
-            authDomain: "ad-addendence.firebaseapp.com",
-            projectId: "ad-addendence",
-            storageBucket: "ad-addendence.firebasestorage.app",
-            messagingSenderId: "914725906557",
-            appId: "1:914725906557:web:c9ce2c108efb7abe9da914"
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_AUTH_DOMAIN",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_STORAGE_BUCKET",
+            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+            appId: "YOUR_APP_ID"
         };
 
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const db = firebase.firestore();
 
-        // Show current date and time on the page
         function updateDateTime() {
             const now = new Date();
             document.getElementById("current-date").innerText = now.toISOString().split("T")[0];
@@ -155,11 +154,9 @@
 
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
-
             const attendance = document.getElementById('attendance').value;
             const task = document.getElementById('task').value;
             const user = auth.currentUser;
-
             if (!user) {
                 alert("You are not logged in");
                 return;
@@ -168,7 +165,6 @@
             const date = new Date().toISOString().split("T")[0];
 
             try {
-                // Check for duplicate attendance today
                 const snapshot = await db.collection("attendance")
                     .where("uid", "==", user.uid)
                     .where("date", "==", date)
@@ -192,8 +188,6 @@
                 messageDiv.style.color = "green";
                 messageDiv.innerText = "Attendance submitted successfully!";
                 form.reset();
-
-                // Refresh stats and calendar
                 await loadStats();
                 await loadCalendarEvents();
 
@@ -209,28 +203,6 @@
             }).catch((error) => {
                 alert("Error logging out: " + error.message);
             });
-        }
-
-        async function loadStats() {
-            const user = auth.currentUser;
-            if (!user) return;
-
-            const today = new Date().toISOString().split("T")[0];
-            const snapshot = await db.collection("attendance")
-                .where("uid", "==", user.uid)
-                .where("date", "==", today)
-                .get();
-
-            let presentCount = 0, absentCount = 0;
-
-            snapshot.forEach(doc => {
-                const data = doc.data();
-                if (data.attendance === "Present") presentCount++;
-                else if (data.attendance === "Absent") absentCount++;
-            });
-
-            document.getElementById("present-count").innerText = presentCount;
-            document.getElementById("absent-count").innerText = absentCount;
         }
 
         async function loadCalendarEvents() {
@@ -253,23 +225,14 @@
             });
 
             const calendarEl = document.getElementById('calendar');
-
-            // Safely destroy previous calendar if exists and has destroy method
-            if (window.calendar && typeof window.calendar.destroy === "function") {
+            if (window.calendar) {
                 window.calendar.destroy();
+                window.calendar = null;
             }
 
             window.calendar = new FullCalendar.Calendar(calendarEl, {
                 initialView: 'dayGridMonth',
-                events: events,
-                headerToolbar: {
-                    left: 'prev,next today',
-                    center: 'title',
-                    right: 'dayGridMonth,timeGridWeek,timeGridDay'
-                },
-                navLinks: true,
-                editable: false,
-                dayMaxEvents: true
+                events: events
             });
 
             window.calendar.render();
@@ -279,12 +242,10 @@
             if (!user) {
                 window.location.href = "login.html";
             } else {
-                loadStats();
                 loadCalendarEvents();
             }
         });
     </script>
 
 </body>
-
 </html>
