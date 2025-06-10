@@ -299,41 +299,8 @@
         const allRows = [];
 
         // Object to store attendance counts per user
-        const attendanceCounts = {};
+        
 
-        const snapshot = await db.collection("attendance").orderBy("date", "desc").get();
-
-        for (const doc of snapshot.docs) {
-            const data = doc.data();
-            const userData = await db.collection("users").doc(data.uid).get();
-            const name = userData.exists ? userData.data().name : "Unknown";
-
-            // Push attendance row data
-            const rowData = {
-                name,
-                email: data.email,
-                date: data.date,
-                time: data.time,
-                attendance: data.attendance,
-                task: data.task
-            };
-            allRows.push(rowData);
-
-            calendarEvents.push({
-                title: `${name} - ${data.attendance}`,
-                start: data.date
-            });
-
-            // Count attendance status for summary
-            if (!attendanceCounts[name]) {
-                attendanceCounts[name] = { Present: 0, Absent: 0 };
-            }
-            if (data.attendance === "Present") {
-                attendanceCounts[name].Present += 1;
-            } else if (data.attendance === "Absent") {
-                attendanceCounts[name].Absent += 1;
-            }
-        }
 
         // Function to render attendance table rows
         function renderTable(rows) {
