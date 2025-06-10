@@ -241,7 +241,7 @@
             if (!user) {
                 window.location.href = "login.html";
             } else {
-                document.getElementById("user-name").innerText = user.displayName || "User";
+                document.getElementById("user-name").innerText = user.name || "User";
                 document.getElementById("user-email").innerText = user.email;
                 loadAttendanceRecords();
                 calculateAttendance();
