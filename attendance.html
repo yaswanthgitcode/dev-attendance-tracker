@@ -257,6 +257,40 @@
             }
         });
 
+        auth.onAuthStateChanged(async (user) => {
+            if (!user) {
+                window.location.href = "login.html";
+            } else {
+                const db = firebase.firestore();
+                const today = new Date().toISOString().split("T")[0];
+
+                document.getElementById("user-email").innerText = user.email;
+
+                // Check if the user marked attendance today
+                const attendanceSnapshot = await db.collection("attendance")
+                    .where("uid", "==", user.uid)
+                    .where("date", "==", today)
+                    .get();
+
+                if (attendanceSnapshot.empty) {
+                    // Automatically mark as Absent if no attendance is found
+                    await db.collection("attendance").add({
+                        uid: user.uid,
+                        email: user.email,
+                        attendance: "Absent",
+                        task: "Attendance not recorded. Please ensure to submit daily.",
+                        date: today,
+                        time: new Date().toLocaleTimeString()
+                    });
+
+                    console.log("You were marked as Absent because no attendance was found.");
+                }
+
+                loadAttendanceRecords();
+                calculateAttendance();
+            }
+        });
+
 
 
         function logout() {
