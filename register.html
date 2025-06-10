@@ -82,22 +82,24 @@
 </head>
 
 <body>
-    <h2>Register</h2>
-    <form id="register-form">
-        <label>Name</label>
-        <input type="text" id="name" required>
+    
 
-        <label>Email</label>
-        <input type="email" id="email" required>
-
-        <label>Password</label>
-        <div style="position: relative; width: 100%;">
-            <input type="password" id="password" required style="padding-right: 40px; width: 100%;">
-            <button type="button" id="togglePassword">Show</button>
+    <!-- From Uiverse.io by alexruix -->
+    <div class="form-box" id="register-form">
+        <form class="form">
+            <span class="title">Register</span>
+            <span class="subtitle">Create a free account with your email.</span>
+            <div class="form-container">
+                <input type="text" class="input" placeholder=" Name" id="name" required>
+                <input type="email" class="input" placeholder="Email" id="email" required>
+                <input type="password" class="input" placeholder="Password" id="password" required>
+            </div>
+            <button type="submit">Register</button>
+        </form>
+        <div class="form-section">
+            <p>Have an account? <a href="login.html">Log in</a> </p>
         </div>
-
-        <button type="submit">Register</button>
-    </form>
+    </div>
     <div id="message"></div>
 
     <script>
